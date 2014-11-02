@@ -1,0 +1,15 @@
+[Unit]
+Description=Bamboo
+After=network.target
+Wants=network.target
+
+[Service]
+User=bamboo
+Group=bamboo
+Environment="HOME=/opt/bamboo"
+ExecStart=/opt/bamboo/bamboo -config /etc/bamboo/bamboo.json -log /var/log/bamboo.log
+Restart=always
+RestartSec=20
+
+[Install]
+WantedBy=multi-user.target

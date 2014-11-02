@@ -13,7 +13,8 @@ origdir="$(pwd)"
 workspace="builder"
 pkgtype=${_PKGTYPE:-"deb"}
 builddir="build"
-installdir="opt"
+installdir="opt/${name}"
+configdir="etc/${name}"
 function cleanup() {
     cd ${origdir}/${workspace}
     rm -rf ${name}*.{deb,rpm}
@@ -23,29 +24,38 @@ function cleanup() {
 function bootstrap() {
     cd ${origdir}/${workspace}
 
-    # configuration directory
-    mkdir -p ${builddir}/${name}/${installdir}/bamboo/config
+    mkdir -p ${builddir}/${name}/${configdir}
+    mkdir -p ${builddir}/${name}/${installdir}
+
+    # systemd service directory
+    mkdir -p ${builddir}/${name}/usr/lib/systemd/system
 
     pushd ${builddir}
 }
 
 function build() {
 
-    # Prepare binary at /opt/bamboo/bamboo
-    cp ${origdir}/bamboo ${name}/${installdir}/bamboo/bamboo
-    chmod 755 ${name}/${installdir}/bamboo/bamboo
+    # Prepare binary
+    cp ${origdir}/bamboo ${name}/${installdir}/bamboo
+    chmod 755 ${name}/${installdir}/bamboo
 
-    # Link default confiugration
-    cp -rp ${origdir}/config/* ${name}/${installdir}/bamboo/config/.
+    # Add default configuration
+    cp -p ../bamboo.json ${name}/${configdir}/.
+
+    # Add example configuration
+    cp -rp ${origdir}/config/* ${name}/${configdir}/.
+
+    # Add systemd service
+    cp -p ../bamboo.service ${name}/usr/lib/systemd/system/.
 
     # Distribute UI webapp
-    mkdir -p ${name}/${installdir}/bamboo/webapp
-    cp -rp ${origdir}/webapp/dist ${name}/${installdir}/bamboo/webapp/dist
-    cp -rp ${origdir}/webapp/fonts ${name}/${installdir}/bamboo/webapp/fonts
-    cp ${origdir}/webapp/index.html ${name}/${installdir}/bamboo/webapp/index.html
+    mkdir -p ${name}/${installdir}/webapp
+    cp -rp ${origdir}/webapp/dist ${name}/${installdir}/webapp/dist
+    cp -rp ${origdir}/webapp/fonts ${name}/${installdir}/webapp/fonts
+    cp ${origdir}/webapp/index.html ${name}/${installdir}/webapp/index.html
 
     # Versioning
-    echo ${version} > ${name}/${installdir}/bamboo/VERSION
+    echo ${version} > ${name}/${installdir}/VERSION
     pushd ${name}
 }
 
@@ -63,7 +73,7 @@ function mkdeb() {
     --after-remove  ../../build.after-remove \
     --before-remove ../../build.before-remove \
     -m "${USER}@${HOSTNAME}" \
-    --deb-upstart ../../bamboo-server \
+    --config-files etc/bamboo \
     --license "${license}" \
     --prefix=/ \
     -s dir \

@@ -1,9 +1,7 @@
 #!/bin/bash
 
-DATADIR="/var/bamboo"
 USER="bamboo"
 GROUP="bamboo"
-SHELL="/bin/false"
 
 set -e
 
