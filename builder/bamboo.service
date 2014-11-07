@@ -10,6 +10,7 @@ Environment="HOME=/opt/bamboo"
 ExecStart=/opt/bamboo/bamboo -config /etc/bamboo/bamboo.json -log /var/log/bamboo.log
 Restart=always
 RestartSec=20
+WorkingDirectory=/opt/bamboo
 
 [Install]
 WantedBy=multi-user.target
